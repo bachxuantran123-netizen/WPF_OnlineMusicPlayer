@@ -15,7 +15,6 @@ namespace WPF_OnlineMusicPlayer.Data
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            // Tạo file CSDL cục bộ tên là musicapp.db
             optionsBuilder.UseSqlite("Data Source=musicapp.db");
         }
     }

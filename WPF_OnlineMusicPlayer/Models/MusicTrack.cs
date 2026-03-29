@@ -24,6 +24,9 @@ namespace WPF_OnlineMusicPlayer.Models
         [JsonProperty("artistName")]
         public string artist_name { get; set; }
 
+        [JsonProperty("primaryGenreName")]
+        public string genre { get; set; }
+
         [JsonProperty("artworkUrl100")]
         public string image { get; set; }
 
