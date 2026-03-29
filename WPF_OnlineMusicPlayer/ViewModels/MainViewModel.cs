@@ -14,14 +14,15 @@ namespace WPF_OnlineMusicPlayer.ViewModels
 {
     public class MainViewModel : ObservableObject
     {
-        private JamendoService _apiService;
+        private MusicService _apiService;
 
         // ObservableCollection là danh sách đặc biệt của WPF, khi thêm/xóa item, XAML sẽ tự động vẽ lại màn hình
-        public ObservableCollection<JamendoTrack> Playlist { get; set; }
+        public ObservableCollection<MusicTrack> Playlist { get; set; }
+        public int CurrentUserId { get; set; }
 
         // Biến lưu trữ bài hát người dùng đang bấm chọn
-        private JamendoTrack _selectedTrack;
-        public JamendoTrack SelectedTrack
+        private MusicTrack _selectedTrack;
+        public MusicTrack SelectedTrack
         {
             get { return _selectedTrack; }
             set { _selectedTrack = value; OnPropertyChanged(); } // Hét lên cho XAML biết đã chọn bài khác!
@@ -32,8 +33,8 @@ namespace WPF_OnlineMusicPlayer.ViewModels
 
         public MainViewModel()
         {
-            _apiService = new JamendoService();
-            Playlist = new ObservableCollection<JamendoTrack>();
+            _apiService = new MusicService();
+            Playlist = new ObservableCollection<MusicTrack>();
 
             // Định nghĩa hành động khi bấm nút Tải Nhạc
             LoadMusicCommand = new RelayCommand(async (o) =>
@@ -60,7 +61,7 @@ namespace WPF_OnlineMusicPlayer.ViewModels
                 }
             });
         }
-        public void SaveListeningHistory(JamendoTrack track)
+        public void SaveListeningHistory(MusicTrack track)
         {
             if (track == null) return;
 
@@ -68,7 +69,7 @@ namespace WPF_OnlineMusicPlayer.ViewModels
             {
                 var history = new ListeningHistory
                 {
-                    UserId = 1,
+                    UserId = CurrentUserId,
                     TrackId = track.id,
                     TrackName = track.name,
                     ArtistName = track.artist_name,

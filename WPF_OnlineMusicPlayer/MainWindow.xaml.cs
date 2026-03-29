@@ -13,6 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
+using WPF_OnlineMusicPlayer.Models;
 using WPF_OnlineMusicPlayer.ViewModels;
 
 namespace WPF_OnlineMusicPlayer
@@ -22,12 +23,16 @@ namespace WPF_OnlineMusicPlayer
         private DispatcherTimer _timer;
         private bool _isDraggingSlider = false;
         private bool _isPlaying = false;
-        public MainWindow()
+        public MainWindow(int userId)
         {
             InitializeComponent();
             _timer = new DispatcherTimer();
             _timer.Interval = TimeSpan.FromMilliseconds(500);
             _timer.Tick += Timer_Tick;
+            if (DataContext is MainViewModel vm)
+            {
+                vm.CurrentUserId = userId;
+            }
         }
 
         // KHI NGƯỜI DÙNG CLICK CHỌN BÀI HÁT TRONG DANH SÁCH
@@ -41,15 +46,17 @@ namespace WPF_OnlineMusicPlayer
                     // 1. Kiểm tra ngay xem link nhạc có bị rỗng/lỗi từ máy chủ không
                     if (string.IsNullOrWhiteSpace(vm.SelectedTrack.audio))
                     {
-                        MessageBox.Show("Rất tiếc! Bài hát này không được Jamendo cung cấp link nghe thử.");
+                        MessageBox.Show("Rất tiếc! Bài hát này không được Apple cung cấp link nghe thử.");
                         return;
                     }
 
                     // 2. DỪNG bài cũ lại (Xóa sạch bộ đệm) trước khi nạp bài mới để tránh kẹt hệ thống
                     AudioPlayer.Stop();
 
+                    string streamingUrl = vm.SelectedTrack.audio.Replace("https://", "http://");
+
                     // 3. Ép chuẩn đường dẫn (UriKind.Absolute) và Bắt đầu phát
-                    AudioPlayer.Source = new Uri(vm.SelectedTrack.audio, UriKind.Absolute);
+                    AudioPlayer.Source = new Uri(streamingUrl, UriKind.Absolute);
                     AudioPlayer.Play();
 
                     _isPlaying = true;
@@ -60,8 +67,7 @@ namespace WPF_OnlineMusicPlayer
                 }
                 catch (System.NullReferenceException)
                 {
-                    // Bẫy lỗi đột tử của Windows Media Player
-                    MessageBox.Show("LỖI HỆ ĐIỀU HÀNH: Máy tính của em đang bị tắt tính năng Windows Media Player (hoặc thiếu Driver âm thanh), khiến C# không thể phát nhạc.\n\nCách sửa: Mở Start Menu -> Gõ tìm 'Turn Windows features on or off' -> Tích chọn 'Media Features' -> OK và khởi động lại máy tính.");
+                    MessageBox.Show("LỖI HỆ ĐIỀU HÀNH");
                 }
                 catch (Exception ex)
                 {
