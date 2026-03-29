@@ -1,0 +1,83 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Input;
+using WPF_OnlineMusicPlayer.Core;
+using WPF_OnlineMusicPlayer.Data;
+using WPF_OnlineMusicPlayer.Models;
+using WPF_OnlineMusicPlayer.Services;
+
+namespace WPF_OnlineMusicPlayer.ViewModels
+{
+    public class MainViewModel : ObservableObject
+    {
+        private JamendoService _apiService;
+
+        // ObservableCollection là danh sách đặc biệt của WPF, khi thêm/xóa item, XAML sẽ tự động vẽ lại màn hình
+        public ObservableCollection<JamendoTrack> Playlist { get; set; }
+
+        // Biến lưu trữ bài hát người dùng đang bấm chọn
+        private JamendoTrack _selectedTrack;
+        public JamendoTrack SelectedTrack
+        {
+            get { return _selectedTrack; }
+            set { _selectedTrack = value; OnPropertyChanged(); } // Hét lên cho XAML biết đã chọn bài khác!
+        }
+
+        // Lệnh bấm nút tải nhạc
+        public ICommand LoadMusicCommand { get; set; }
+
+        public MainViewModel()
+        {
+            _apiService = new JamendoService();
+            Playlist = new ObservableCollection<JamendoTrack>();
+
+            // Định nghĩa hành động khi bấm nút Tải Nhạc
+            LoadMusicCommand = new RelayCommand(async (o) =>
+            {
+                System.Windows.MessageBox.Show("1. NÚT ĐÃ HOẠT ĐỘNG! Bắt đầu chuẩn bị lên mạng...");
+                try
+                {
+                    var tracks = await _apiService.GetTrendingTracksAsync();
+                    System.Windows.MessageBox.Show($"2. THÀNH CÔNG! Mạng đã trả về {tracks?.Count} bài hát!");
+                    if (tracks == null || tracks.Count == 0)
+                    {
+                        System.Windows.MessageBox.Show("3. Lỗi: Mạng có kết nối nhưng danh sách nhạc trống không!");
+                        return;
+                    }
+                    Playlist.Clear(); // Xóa list cũ
+                    foreach (var track in tracks)
+                    {
+                        Playlist.Add(track); // Đổ từng bài hát mới vào
+                    }
+                }
+                catch (System.Exception ex)
+                {
+                    System.Windows.MessageBox.Show($"Lỗi không tải được nhạc:\n{ex.Message}");
+                }
+            });
+        }
+        public void SaveListeningHistory(JamendoTrack track)
+        {
+            if (track == null) return;
+
+            using (var db = new AppDbContext())
+            {
+                var history = new ListeningHistory
+                {
+                    UserId = 1,
+                    TrackId = track.id,
+                    TrackName = track.name,
+                    ArtistName = track.artist_name,
+                    ListenedAt = System.DateTime.Now
+                };
+
+                db.ListeningHistories.Add(history);
+                db.SaveChanges(); // Lệnh này tự động viết SQL Insert vào Database
+            }
+        }
+    }
+}
