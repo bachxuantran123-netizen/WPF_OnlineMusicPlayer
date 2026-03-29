@@ -12,16 +12,16 @@ namespace WPF_OnlineMusicPlayer.Services
 {
     public class MusicService
     {
+        private readonly string[] _genres = { "pop", "rock", "lofi", "chill", "acoustic", "edm", "kpop" };
+
         public async Task<List<MusicTrack>> GetTrendingTracksAsync()
         {
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
 
             using (HttpClient client = new HttpClient())
             {
-                string[] genres = { "pop", "rock", "lofi", "chill", "acoustic", "edm", "kpop" };
-
                 Random rnd = new Random();
-                string randomGenre = genres[rnd.Next(genres.Length)];
+                string randomGenre = _genres[rnd.Next(_genres.Length)];
 
                 string url = $"https://itunes.apple.com/search?term={randomGenre}&limit=100&media=music";
 
@@ -33,15 +33,11 @@ namespace WPF_OnlineMusicPlayer.Services
                     string jsonResponse = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                     MusicResponse data = JsonConvert.DeserializeObject<MusicResponse>(jsonResponse);
 
-                    // Phóng to ảnh bìa từ 100x100 lên 400x400 cho giao diện đẹp long lanh
                     if (data?.results != null)
                     {
-                        foreach (var track in data.results)
+                        foreach (var track in data.results.Where(t => !string.IsNullOrEmpty(t.image)))
                         {
-                            if (!string.IsNullOrEmpty(track.image))
-                            {
-                                track.image = track.image.Replace("100x100bb", "400x400bb");
-                            }
+                            track.image = track.image.Replace("100x100bb", "400x400bb");
                         }
                     }
 
@@ -49,7 +45,7 @@ namespace WPF_OnlineMusicPlayer.Services
                 }
                 catch (Exception ex)
                 {
-                    throw new Exception("Lỗi kết nối máy chủ Apple: " + ex.Message);
+                    throw new Exception($"Lỗi máy chủ: {ex.Message}");
                 }
             }
         }
