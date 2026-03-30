@@ -8,6 +8,7 @@ using System.Windows.Input;
 using WPF_OnlineMusicPlayer.Core;
 using WPF_OnlineMusicPlayer.Data;
 using WPF_OnlineMusicPlayer.Models;
+using WPF_OnlineMusicPlayer.Views;
 
 namespace WPF_OnlineMusicPlayer.ViewModels
 {

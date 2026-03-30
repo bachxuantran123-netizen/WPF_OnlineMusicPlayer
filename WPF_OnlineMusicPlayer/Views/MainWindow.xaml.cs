@@ -16,7 +16,7 @@ using System.Windows.Threading;
 using WPF_OnlineMusicPlayer.Models;
 using WPF_OnlineMusicPlayer.ViewModels;
 
-namespace WPF_OnlineMusicPlayer
+namespace WPF_OnlineMusicPlayer.Views
 {
     public partial class MainWindow : Window
     {
@@ -61,7 +61,6 @@ namespace WPF_OnlineMusicPlayer
                     _isPlaying = true;
                     btnPlayPause.Content = "⏸";
 
-                    // 4. GỌI DATABASE LƯU LỊCH SỬ NGHE NHẠC LẠI
                     vm.SaveListeningHistory(vm.SelectedTrack);
                 }
                 catch (System.NullReferenceException)
