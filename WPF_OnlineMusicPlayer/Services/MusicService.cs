@@ -77,7 +77,7 @@ namespace WPF_OnlineMusicPlayer.Services
                 }
                 catch (Exception ex)
                 {
-                    throw new Exception($"Lỗi tìm kiếm: {ex.Message}");
+                    throw new Exception("Lỗi kết nối máy chủ Apple: " + ex.Message);
                 }
             }
         }

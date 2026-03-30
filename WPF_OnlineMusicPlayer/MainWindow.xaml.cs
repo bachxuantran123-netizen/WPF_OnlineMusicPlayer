@@ -53,8 +53,7 @@ namespace WPF_OnlineMusicPlayer
 
                     AudioPlayer.Stop();
 
-                    // Bypass HTTPS issue for MediaElement streaming
-                    string streamingUrl = vm.CurrentTrack.audio.Replace("https://", "http://");
+                    string streamingUrl = vm.SelectedTrack.audio.Replace("https://", "http://");
 
                     AudioPlayer.Source = new Uri(streamingUrl, UriKind.Absolute);
                     AudioPlayer.Play();
@@ -62,13 +61,16 @@ namespace WPF_OnlineMusicPlayer
                     _isPlaying = true;
                     btnPlayPause.Content = "⏸";
 
-                    vm.SaveListeningHistory(vm.CurrentTrack);
+                    // 4. GỌI DATABASE LƯU LỊCH SỬ NGHE NHẠC LẠI
+                    vm.SaveListeningHistory(vm.SelectedTrack);
                 }
-                catch (Exception)
+                catch (System.NullReferenceException)
                 {
-                    MessageBox.Show("Lỗi phát nhạc. Vui lòng kiểm tra lại kết nối mạng hoặc thiết bị âm thanh.", "Lỗi hệ thống", MessageBoxButton.OK, MessageBoxImage.Error);
-                    btnPlayPause.Content = "▶";
-                    _isPlaying = false;
+                    MessageBox.Show("LỖI HỆ ĐIỀU HÀNH");
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Lỗi phát nhạc: {ex.Message}");
                 }
             }
         }

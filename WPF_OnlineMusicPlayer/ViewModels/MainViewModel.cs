@@ -40,9 +40,7 @@ namespace WPF_OnlineMusicPlayer.ViewModels
             set { _searchText = value; OnPropertyChanged(); }
         }
 
-        public ICommand SearchCommand { get; set; }
-        public ICommand RecommendCommand { get; set; }
-
+        // Lệnh bấm nút tải nhạc
         public ICommand LoadMusicCommand { get; set; }
 
 		public MainViewModel()
@@ -50,92 +48,45 @@ namespace WPF_OnlineMusicPlayer.ViewModels
 			_apiService = new MusicService();
 			Playlist = new ObservableCollection<MusicTrack>();
 
-			LoadMusicCommand = new RelayCommand(async (o) =>
-			{
-				try
-				{
-					var tracks = await _apiService.GetTrendingTracksAsync();
-
-					if (tracks == null || !tracks.Any())
-					{
-						MessageBox.Show("Không tìm thấy danh sách nhạc. Vui lòng thử lại sau.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
-						return;
-					}
-
-					Playlist.Clear();
-					foreach (var track in tracks)
-					{
-						Playlist.Add(track);
-					}
-				}
-				catch (Exception ex)
-				{
-					MessageBox.Show($"Không thể tải dữ liệu: {ex.Message}", "Lỗi kết nối", MessageBoxButton.OK, MessageBoxImage.Error);
-				}
-			});
-
-            SearchCommand = new RelayCommand(async (o) =>
+            // Định nghĩa hành động khi bấm nút Tải Nhạc
+            LoadMusicCommand = new RelayCommand(async (o) =>
             {
-                if (string.IsNullOrWhiteSpace(SearchText)) return;
+                System.Windows.MessageBox.Show("1. NÚT ĐÃ HOẠT ĐỘNG! Bắt đầu chuẩn bị lên mạng...");
                 try
                 {
-                    var tracks = await _apiService.SearchTracksAsync(SearchText);
-                    Playlist.Clear();
-                    foreach (var track in tracks) Playlist.Add(track);
-                }
-                catch (Exception ex) { MessageBox.Show(ex.Message, "Lỗi"); }
-            });
-
-            RecommendCommand = new RelayCommand(async (o) =>
-            {
-                string favoriteGenre = "pop";
-
-                try
-                {
-                    using (var db = new AppDbContext())
+                    var tracks = await _apiService.GetTrendingTracksAsync();
+                    System.Windows.MessageBox.Show($"2. THÀNH CÔNG! Mạng đã trả về {tracks?.Count} bài hát!");
+                    if (tracks == null || tracks.Count == 0)
                     {
-                        var topGenre = db.ListeningHistories
-                            .Where(h => h.UserId == CurrentUserId && h.Genre != null)
-                            .GroupBy(h => h.Genre)
-                            .OrderByDescending(g => g.Count())
-                            .Select(g => g.Key)
-                            .FirstOrDefault();
-
-                        if (!string.IsNullOrEmpty(topGenre))
-                        {
-                            favoriteGenre = topGenre;
-                            MessageBox.Show($"Dựa vào lịch sử, có vẻ bạn rất thích nghe thể loại:\n{ favoriteGenre}\n\nHệ thống đang tải các bài hát tương tự...", "Phân tích Gu âm nhạc");
-                        }
-                        else
-                        {
-                            MessageBox.Show("Bạn chưa nghe bài nào cả, hãy nghe vài bài để hệ thống phân tích nhé!", "Thông báo");
-							return;
-                        }
+                        System.Windows.MessageBox.Show("3. Lỗi: Mạng có kết nối nhưng danh sách nhạc trống không!");
+                        return;
                     }
-
-                    var tracks = await _apiService.SearchTracksAsync(favoriteGenre);
-                    Playlist.Clear();
-                    foreach (var track in tracks) Playlist.Add(track);
+                    Playlist.Clear(); // Xóa list cũ
+                    foreach (var track in tracks)
+                    {
+                        Playlist.Add(track); // Đổ từng bài hát mới vào
+                    }
                 }
-                catch (Exception ex) { MessageBox.Show(ex.Message, "Lỗi DB"); }
+                catch (System.Exception ex)
+                {
+                    System.Windows.MessageBox.Show($"Lỗi không tải được nhạc:\n{ex.Message}");
+                }
             });
         }
+        public void SaveListeningHistory(MusicTrack track)
+        {
+            if (track == null) return;
 
-		public void SaveListeningHistory(MusicTrack track)
-		{
-			if (track == null) return;
-
-			using (var db = new AppDbContext())
-			{
-				var history = new ListeningHistory
-				{
-					UserId = CurrentUserId,
-					TrackId = track.id,
-					TrackName = track.name,
-					ArtistName = track.artist_name,
-					Genre = track.genre,
-					ListenedAt = DateTime.Now
-				};
+            using (var db = new AppDbContext())
+            {
+                var history = new ListeningHistory
+                {
+                    UserId = CurrentUserId,
+                    TrackId = track.id,
+                    TrackName = track.name,
+                    ArtistName = track.artist_name,
+                    ListenedAt = System.DateTime.Now
+                };
 
 				db.ListeningHistories.Add(history);
 				db.SaveChanges();
