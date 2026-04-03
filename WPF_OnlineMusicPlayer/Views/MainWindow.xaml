@@ -2,7 +2,8 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:WPF_OnlineMusicPlayer.ViewModels"
-        Title="WPF Online Music Player (MVVM &amp; Database)" Height="500" Width="750" 
+        Icon="/WPF_Project_Icon.ico"
+        Title="WPF Online Music Player" Height="500" Width="750" 
         Background="#121212" WindowStartupLocation="CenterScreen">
 
     <Window.DataContext>
